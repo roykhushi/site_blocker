@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Blocker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Website Blocker</h1>
+    
+    <div class="add-site">
+      <h2>Block a Website</h2>
+      <div class="input-group">
+        <input type="text" id="site-input" placeholder="Enter URL (e.g., facebook.com)">
+        <button id="add-site">Block</button>
+      </div>
+      <p class="hint">Enter domain without http:// or www (e.g., facebook.com)</p>
+    </div>
+    
+    <div class="blocked-sites">
+      <h2>Blocked Websites</h2>
+      <ul id="blocked-list"></ul>
+    </div>
+    
+    <div class="favorites">
+      <h2>Favorites (Most Blocked)</h2>
+      <ul id="favorites-list"></ul>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
+
