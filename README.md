@@ -86,7 +86,7 @@ site_blocker/
 ## Contributing
 We welcome contributions! Open a PR to get started.
 
-##Acknowledgements
+## Acknowledgements
 <a href="https://www.flaticon.com/free-icons/block" title="block icons">Block icons created by Those Icons - Flaticon</a>
 
 
