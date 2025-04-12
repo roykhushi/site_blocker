@@ -1,22 +1,26 @@
 {
-    "manifest_version": 3,
-    "name": "Website Blocker",
-    "version": "1.0",
-    "description": "Block specific websites and manage your blocked sites",
-    "permissions": ["storage", "tabs", "declarativeNetRequest", "browsingData"],
-    "host_permissions": ["<all_urls>"],
-    "action": {
-      "default_popup": "popup.html"
-    },
-    "background": {
-      "service_worker": "background.js"
-    },
-    "web_accessible_resources": [
+  "manifest_version": 3,
+  "name": "Website Blocker",
+  "version": "1.0",
+  "description": "Block specific websites and manage your blocked sites",
+  "permissions": ["storage", "tabs", "declarativeNetRequest", "browsingData"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "1": "icon1.png"
+    }
+  },
+  "icons": {
+    "1": "icon1.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
     {
       "resources": ["blocked.html"],
       "matches": ["<all_urls>"]
     }
   ]
-  }
-  
-  
+}

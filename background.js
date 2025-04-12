@@ -1,12 +1,15 @@
 // Initialize when extension is installed or updated
 chrome.runtime.onInstalled.addListener(() => {
   // Initialize storage with empty blocked sites and popular sites objects
-  chrome.storage.sync.get(["blockedSites", "popularSites"], (result) => {
+  chrome.storage.sync.get(["blockedSites", "popularSites","todos"], (result) => {
     if (!result.blockedSites) {
       chrome.storage.sync.set({ blockedSites: {} })
     }
     if (!result.popularSites) {
       chrome.storage.sync.set({ popularSites: {} })
+    }
+    if (!result.todos) {
+      chrome.storage.sync.set({ todos: [] })
     }
   })
 
@@ -83,9 +86,9 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       const hostname = new URL(tab.url).hostname.replace(/^www\./, "")
 
       // Get blocked sites from storage
-      chrome.storage.sync.get(["blockedSites", "popularSites"], (result) => {
+      chrome.storage.sync.get(["blockedSites"], (result) => {
         const blockedSites = result.blockedSites || {}
-        const popularSites = result.popularSites || {}
+        // const popularSites = result.popularSites || {}
 
         // Check if the hostname or any part of it is in the blocked list
         for (const site in blockedSites) {
@@ -114,11 +117,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 })
 
-// Clear browser cache for better rule enforcement
+var millisecondsPerWeek = 1000*60*60*24*7;
+var oneWeekAgo = (new Date()).getTime()-millisecondsPerWeek;
+
 function clearBrowserCache() {
   if (chrome.browsingData) {
     chrome.browsingData.removeCache({
-      since: 0,
+      since: oneWeekAgo,
     })
   }
 }
