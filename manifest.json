@@ -1,9 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "Website Blocker",
+  "name": "Website Blocker & Productivity Suite",
   "version": "1.0",
-  "description": "Block specific websites and manage your blocked sites",
-  "permissions": ["storage", "tabs", "declarativeNetRequest", "browsingData"],
+  "description": "Block websites, manage todos, set reminders, and summarize content with AI",
+  "permissions": [
+    "storage",
+    "tabs",
+    "declarativeNetRequest",
+    "browsingData",
+    "alarms",
+    "notifications",
+    "scripting",
+    "activeTab",
+    "clipboardWrite"
+  ],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
@@ -17,6 +27,12 @@
   "background": {
     "service_worker": "background.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"]
+    }
+  ],
   "web_accessible_resources": [
     {
       "resources": ["blocked.html"],

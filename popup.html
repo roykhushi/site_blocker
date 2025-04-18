@@ -16,6 +16,7 @@
     <div class="tabs">
       <button class="tab-btn active" data-tab="blocker">Website Blocker</button>
       <button class="tab-btn" data-tab="todos">Todo List</button>
+      <button class="tab-btn" data-tab="summarizer">Summarizer</button>
     </div>
     
     <div id="blocker-tab" class="tab-content active">
@@ -61,6 +62,77 @@
         </div>
       </div>
     </div>
+
+    <div id="summarizer-tab" class="tab-content">
+      <div class="summarizer-container">
+        <h2>Smart Summarizer</h2>
+        <p class="hint">Powered by Gemini 2.0 Flash</p>
+        
+        <div class="form-group">
+          <label for="content-input">Content to Summarize</label>
+          <textarea id="content-input" placeholder="Paste or type content to summarize..." rows="6"></textarea>
+        </div>
+        
+        <div class="summarizer-options">
+          <div class="form-group">
+            <label for="summary-mode">Summarization Mode</label>
+            <select id="summary-mode">
+              <option value="tldr">TL;DR</option>
+              <option value="bullets">Bullet Points</option>
+              <option value="todos">Actionable To-Do Items</option>
+              <option value="highlights">Key Highlights</option>
+              <option value="casual">Casual Summary</option>
+              <option value="professional">Professional Summary</option>
+            </select>
+          </div>
+          
+          <div class="form-group toggle-container">
+            <label class="toggle-label">
+              <input type="checkbox" id="fetch-content-toggle">
+              <span class="toggle-text">Fetch content from current page</span>
+            </label>
+            <p class="hint">Summarizes the current web page or YouTube transcript</p>
+          </div>
+        </div>
+        
+        <button id="summarize-btn" class="primary-btn">
+          <span class="btn-text">Summarize with Gemini Flash</span>
+          <span class="btn-icon">✨</span>
+        </button>
+        
+        <div id="summarizer-result" class="result-container hidden">
+          <div class="result-header">
+            <h3>Summary</h3>
+            <div class="result-actions">
+              <button id="copy-summary" class="icon-btn" title="Copy to clipboard">
+                <span class="icon">📋</span>
+              </button>
+              <button id="share-summary" class="icon-btn" title="Share summary">
+                <span class="icon">🔗</span>
+              </button>
+            </div>
+          </div>
+          <div id="summary-content" class="result-content"></div>
+        </div>
+        
+        <div id="summarizer-loading" class="loading-container hidden">
+          <div class="loading-spinner"></div>
+          <p>Generating summary with Gemini...</p>
+        </div>
+        
+        <div id="summarizer-error" class="error-container hidden">
+          <p class="error-message">Failed to generate summary. Please try again.</p>
+          <button id="retry-btn" class="secondary-btn">Retry</button>
+        </div>
+        
+        <div class="productivity-tips">
+          <h4>Productivity Tip of the Day</h4>
+          <p id="productivity-tip">Use the Pomodoro Technique: Work for 25 minutes, then take a 5-minute break.</p>
+        </div>
+      </div>
+    </div>
+
+    
     <footer id="footer">
       Made with ❤️ by Khushi  
       

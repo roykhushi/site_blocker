@@ -108,6 +108,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       updateBlockRules(result.blockedSites || {});
     });
   }
+  else if (message.action === "getPageContent") {
+    // Handle content fetching for summarizer
+    if (sender.tab) {
+      // This is from a content script, not from our popup
+      sendResponse({ success: true })
+    } else {
+      // This is from our popup, we'll handle it in the tabs API
+      sendResponse({ success: true })
+    }
+  }
+  return true
 });
 
 var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
@@ -120,3 +131,19 @@ function clearBrowserCache() {
     });
   }
 }
+
+// Content script injection for page summarization
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === "complete" && tab.url) {
+    // Check if it's a YouTube page
+    if (tab.url.includes("youtube.com/watch")) {
+      // Inject YouTube transcript extraction script
+      chrome.scripting
+        .executeScript({
+          target: { tabId: tabId },
+          files: ["youtube-transcript.js"],
+        })
+        .catch((err) => console.error("Failed to inject YouTube script:", err))
+    }
+  }
+})

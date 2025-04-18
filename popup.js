@@ -420,4 +420,291 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
+
+
+
+  
+  // Smart Summarizer functionality
+  const contentInput = document.getElementById("content-input")
+  const summaryMode = document.getElementById("summary-mode")
+  const fetchContentToggle = document.getElementById("fetch-content-toggle")
+  const summarizeBtn = document.getElementById("summarize-btn")
+  const summarizerResult = document.getElementById("summarizer-result")
+  const summaryContent = document.getElementById("summary-content")
+  const summarizerLoading = document.getElementById("summarizer-loading")
+  const summarizerError = document.getElementById("summarizer-error")
+  const retryBtn = document.getElementById("retry-btn")
+  const copySummaryBtn = document.getElementById("copy-summary")
+  const shareSummaryBtn = document.getElementById("share-summary")
+  const productivityTip = document.getElementById("productivity-tip");
+
+  const BACKEND_API_URL = "http://localhost:3000/api/summarize"
+
+  // Load a random productivity tip
+  loadRandomProductivityTip()
+
+  // Fetch content toggle
+  fetchContentToggle.addEventListener("change", () => {
+    if (fetchContentToggle.checked) {
+      // Disable the content input
+      contentInput.disabled = true
+      contentInput.placeholder = "Content will be fetched from the current page..."
+    } else {
+      // Enable the content input
+      contentInput.disabled = false
+      contentInput.placeholder = "Paste or type content to summarize..."
+    }
+  })
+
+  // Summarize button click
+  summarizeBtn.addEventListener("click", () => {
+    // Hide previous results and errors
+    summarizerResult.classList.add("hidden")
+    summarizerError.classList.add("hidden")
+
+    // Show loading
+    summarizerLoading.classList.remove("hidden")
+
+    if (fetchContentToggle.checked) {
+      // Fetch content from current page
+      fetchCurrentPageContent()
+        .then((content) => {
+          if (content) {
+            generateSummary(content)
+          } else {
+            showError("Could not fetch content from the current page.")
+          }
+        })
+        .catch((error) => {
+          showError("Error fetching content: " + error.message)
+        })
+    } else {
+      // Use content from input
+      const content = contentInput.value.trim()
+      if (!content) {
+        showError("Please enter some content to summarize.")
+        return
+      }
+
+      generateSummary(content)
+    }
+  })
+
+  // Retry button click
+  retryBtn.addEventListener("click", () => {
+    // Hide error
+    summarizerError.classList.add("hidden")
+    // Trigger summarize button click
+    summarizeBtn.click()
+  })
+
+  // Copy summary button click
+  copySummaryBtn.addEventListener("click", () => {
+    const summaryText = summaryContent.textContent
+    navigator.clipboard
+      .writeText(summaryText)
+      .then(() => {
+        // Show copied feedback
+        const originalText = copySummaryBtn.innerHTML
+        copySummaryBtn.innerHTML = '<span class="icon">✓</span>'
+        setTimeout(() => {
+          copySummaryBtn.innerHTML = originalText
+        }, 2000)
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err)
+      })
+  })
+
+  // Share summary button click
+  shareSummaryBtn.addEventListener("click", () => {
+    const summaryText = summaryContent.textContent
+
+    // Check if Web Share API is available
+    if (navigator.share) {
+      navigator
+        .share({
+          title: "Summary from Smart Summarizer",
+          text: summaryText,
+        })
+        .catch((err) => {
+          console.error("Failed to share: ", err)
+        })
+    } else {
+      // Fallback to copy
+      navigator.clipboard
+        .writeText(summaryText)
+        .then(() => {
+          alert("Summary copied to clipboard (sharing not supported in this browser)")
+        })
+        .catch((err) => {
+          console.error("Failed to copy text: ", err)
+        })
+    }
+  })
+
+  // Function to fetch content from current page
+  async function fetchCurrentPageContent() {
+    return new Promise((resolve, reject) => {
+      // Query the active tab
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (!tabs || tabs.length === 0) {
+          reject(new Error("No active tab found"))
+          return
+        }
+
+        const activeTab = tabs[0]
+
+        // Check if it's a YouTube page
+        if (activeTab.url.includes("youtube.com/watch")) {
+          // Fetch YouTube transcript
+          chrome.tabs.sendMessage(activeTab.id, { action: "getYouTubeTranscript" }, (response) => {
+            if (chrome.runtime.lastError) {
+              // Content script might not be injected
+              reject(new Error("Could not get YouTube transcript. Make sure you're on a video page."))
+              return
+            }
+
+            if (response && response.transcript) {
+              resolve(response.transcript)
+            } else {
+              reject(new Error("Could not get YouTube transcript"))
+            }
+          })
+        } else {
+          // Regular web page - get all text content
+          chrome.tabs.sendMessage(activeTab.id, { action: "getPageContent" }, (response) => {
+            if (chrome.runtime.lastError) {
+              // Content script might not be injected, inject it
+              chrome.scripting.executeScript(
+                {
+                  target: { tabId: activeTab.id },
+                  function: () => {
+                    // Get page content
+                    const content = document.body.innerText
+                    return content
+                  },
+                },
+                (results) => {
+                  if (chrome.runtime.lastError) {
+                    reject(new Error("Could not access page content"))
+                    return
+                  }
+
+                  if (results && results[0] && results[0].result) {
+                    resolve(results[0].result)
+                  } else {
+                    reject(new Error("Could not extract page content"))
+                  }
+                },
+              )
+            } else if (response && response.content) {
+              resolve(response.content)
+            } else {
+              reject(new Error("Could not get page content"))
+            }
+          })
+        }
+      })
+    })
+  }
+
+  // Function to generate summary using Gemini
+  async function generateSummary(content) {
+    try {
+      const mode = summaryMode.value
+
+      const response = await fetch(BACKEND_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: content,
+          mode: mode,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to generate summary")
+      }
+
+      const data = await response.json()
+
+      if (data.error) {
+        throw new Error(data.message || "Failed to generate summary")
+      }
+
+      // Display the summary
+      summaryContent.innerHTML = formatSummary(data.summary, mode)
+
+      // Hide loading and show result
+      summarizerLoading.classList.add("hidden")
+      summarizerResult.classList.remove("hidden")
+    } catch (error) {
+      showError("Failed to generate summary: " + error.message)
+    }
+  }
+
+
+
+  // Format summary based on mode
+  function formatSummary(summary, mode) {
+    switch (mode) {
+      case "bullets":
+      case "todos":
+        // Convert to HTML list if not already formatted
+        if (!summary.includes("<li>")) {
+          const lines = summary.split("\n").filter((line) => line.trim())
+          const listItems = lines.map((line) => {
+            // Remove bullet points or numbers if present
+            const cleanLine = line.replace(/^[\s•\-\d.)]+\s*/, "")
+            return `<li>${cleanLine}</li>`
+          })
+          return `<ul>${listItems.join("")}</ul>`
+        }
+        return summary
+      case "highlights":
+        // Add some styling to highlights
+        const parts = summary.split("\n")
+        if (parts.length > 1) {
+          const title = `<strong>${parts[0]}</strong>`
+          const rest = parts.slice(1).join("\n")
+          return `${title}<br>${rest}`
+        }
+        return summary
+      default:
+        // Replace newlines with <br> tags
+        return summary.replace(/\n/g, "<br>")
+    }
+  }
+
+  // Show error message
+  function showError(message) {
+    const errorMessage = document.querySelector(".error-message")
+    errorMessage.textContent = message
+
+    summarizerLoading.classList.add("hidden")
+    summarizerError.classList.remove("hidden")
+  }
+
+  // Load random productivity tip
+  function loadRandomProductivityTip() {
+    const tips = [
+      "Use the Pomodoro Technique: Work for 25 minutes, then take a 5-minute break.",
+      "Try the 2-minute rule: If a task takes less than 2 minutes, do it now.",
+      "Plan tomorrow's tasks at the end of each workday.",
+      "Use the Eisenhower Matrix to prioritize tasks by urgency and importance.",
+      "Block distracting websites during your focus time.",
+      "Practice the 80/20 rule: 80% of results come from 20% of efforts.",
+      "Schedule your most challenging tasks during your peak energy hours.",
+      "Take short breaks to maintain focus and prevent burnout.",
+      "Use time blocking to dedicate specific hours to specific tasks.",
+      "Keep a distraction list nearby to jot down thoughts that interrupt your focus.",
+    ]
+
+    const randomTip = tips[Math.floor(Math.random() * tips.length)]
+    productivityTip.textContent = randomTip
+  }
 });
