@@ -651,29 +651,40 @@ document.addEventListener("DOMContentLoaded", () => {
       case "todos":
         // Convert to HTML list if not already formatted
         if (!summary.includes("<li>")) {
-          const lines = summary.split("\n").filter((line) => line.trim())
+          const lines = summary.split("\n").filter((line) => line.trim());
           const listItems = lines.map((line) => {
-            // Remove bullet points or numbers if present
-            const cleanLine = line.replace(/^[\s•\-\d.)]+\s*/, "")
-            return `<li>${cleanLine}</li>`
-          })
-          return `<ul>${listItems.join("")}</ul>`
+            // Remove any leading bullets, numbers, or special characters
+            let cleanLine = line.replace(/^[\s•\-\d.)]+\s*/, "");
+  
+            // Optional: Bold the first part of the sentence if it's followed by a colon
+            cleanLine = cleanLine.replace(/^(.+?):\s*/, "<strong>$1:</strong> ");
+  
+            // Convert markdown-style bold to HTML <strong> tags
+            cleanLine = cleanLine.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  
+            return `<li style="margin-bottom: 0.5em;">${cleanLine}</li>`;
+          });
+          return `<ul style="padding-left: 1.5em; list-style-type: disc;">${listItems.join("")}</ul>`;
         }
-        return summary
+  
+        // If already formatted, still convert **bold** to <strong>
+        summary = summary.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        return summary;
+  
       case "highlights":
-        // Add some styling to highlights
-        const parts = summary.split("\n")
+        const parts = summary.split("\n");
         if (parts.length > 1) {
-          const title = `<strong>${parts[0]}</strong>`
-          const rest = parts.slice(1).join("\n")
-          return `${title}<br>${rest}`
+          const title = `<strong>${parts[0]}</strong>`;
+          const rest = parts.slice(1).join("<br>");
+          return `${title}<br>${rest}`;
         }
-        return summary
+        return summary;
+  
       default:
-        // Replace newlines with <br> tags
-        return summary.replace(/\n/g, "<br>")
+        return summary.replace(/\n/g, "<br>");
     }
   }
+  
 
   // Show error message
   function showError(message) {
