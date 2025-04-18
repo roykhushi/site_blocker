@@ -421,9 +421,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-
-
-  
   // Smart Summarizer functionality
   const contentInput = document.getElementById("content-input")
   const summaryMode = document.getElementById("summary-mode")
@@ -438,10 +435,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const shareSummaryBtn = document.getElementById("share-summary")
   const productivityTip = document.getElementById("productivity-tip");
 
-  const BACKEND_API_URL = "http://localhost:3000/api/summarize"
+  const BACKEND_API_URL = "https://site-blocker-b4xe.onrender.com/api/summarize"
 
   // Load a random productivity tip
-  loadRandomProductivityTip()
+  loadRandomProductivityTip();
 
   // Fetch content toggle
   fetchContentToggle.addEventListener("change", () => {
@@ -459,11 +456,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // Summarize button click
   summarizeBtn.addEventListener("click", () => {
     // Hide previous results and errors
-    summarizerResult.classList.add("hidden")
-    summarizerError.classList.add("hidden")
+    summarizerResult.classList.add("hidden");
+    summarizerError.classList.add("hidden");
 
     // Show loading
-    summarizerLoading.classList.remove("hidden")
+    summarizerLoading.classList.remove("hidden");
 
     if (fetchContentToggle.checked) {
       // Fetch content from current page
@@ -646,8 +643,6 @@ document.addEventListener("DOMContentLoaded", () => {
       showError("Failed to generate summary: " + error.message)
     }
   }
-
-
 
   // Format summary based on mode
   function formatSummary(summary, mode) {

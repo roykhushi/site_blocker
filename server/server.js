@@ -9,7 +9,10 @@ const app = express()
 const PORT = process.env.PORT || 8080
 
 app.use(cors({
-  origin: "*", //after publishing chrome ext
+  origin: "*",//after publishing chrome ext
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 }
 ))
 app.use(express.json({ limit: "1mb" }))
