@@ -1,4 +1,31 @@
 document.addEventListener("DOMContentLoaded", () => {
+
+  const themeToggle = document.getElementById("theme-toggle-checkbox")
+
+  // Load saved theme preference
+  chrome.storage.sync.get(["darkMode"], (result) => {
+    if (result.darkMode) {
+      document.body.setAttribute("data-theme", "dark")
+      themeToggle.checked = true
+    } else {
+      document.body.removeAttribute("data-theme")
+      themeToggle.checked = false
+    }
+  })
+
+  // Toggle theme when checkbox is clicked
+  themeToggle.addEventListener("change", () => {
+    if (themeToggle.checked) {
+      document.body.setAttribute("data-theme", "dark")
+      chrome.storage.sync.set({ darkMode: true })
+    } else {
+      document.body.removeAttribute("data-theme")
+      chrome.storage.sync.set({ darkMode: false })
+    }
+  })
+
+
+  
   const tabBtns = document.querySelectorAll(".tab-btn");
   const tabContents = document.querySelectorAll(".tab-content");
 
