@@ -18,11 +18,12 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "1": "icon1.png"
+      "2": "icon2.png"
     }
   },
   "icons": {
-    "1": "icon1.png"
+    "1": "icon1.png",
+    "2": "icon2.png"
   },
   "background": {
     "service_worker": "background.js"

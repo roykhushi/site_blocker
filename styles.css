@@ -1,5 +1,4 @@
 :root {
-  /* Light theme variables */
   --bg-color: #f9fafb;
   --container-bg: white;
   --text-color: #374151;
@@ -30,7 +29,6 @@
 }
 
 [data-theme="dark"] {
-  /* Dark theme variables */
   --bg-color: #111827;
   --container-bg: #1f2937;
   --text-color: #e5e7eb;

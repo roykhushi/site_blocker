@@ -9,12 +9,6 @@ const getModel = () => {
   return genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 }
 
-/**
- * Generate a summary of the provided content using Gemini 2.0 Flash
- * @param {string} content - The content to summarize
- * @param {string} mode - The summarization mode (tldr, bullets, todos, highlights, casual, professional)
- * @returns {Promise<string>} - The generated summary
- */
 const generateSummary = async (content, mode) => {
   try {
     const model = getModel()

@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const themeToggle = document.getElementById("theme-toggle-checkbox")
 
-  // Load saved theme preference
   chrome.storage.sync.get(["darkMode"], (result) => {
     if (result.darkMode) {
       document.body.setAttribute("data-theme", "dark")
@@ -13,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Toggle theme when checkbox is clicked
   themeToggle.addEventListener("change", () => {
     if (themeToggle.checked) {
       document.body.setAttribute("data-theme", "dark")
@@ -25,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
 
-  
+
   const tabBtns = document.querySelectorAll(".tab-btn");
   const tabContents = document.querySelectorAll(".tab-content");
 
@@ -448,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Smart Summarizer functionality
+  // ai part
   const contentInput = document.getElementById("content-input")
   const summaryMode = document.getElementById("summary-mode")
   const fetchContentToggle = document.getElementById("fetch-content-toggle")
@@ -464,33 +462,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const BACKEND_API_URL = "https://site-blocker-b4xe.onrender.com/api/summarize"
 
-  // Load a random productivity tip
+ 
   loadRandomProductivityTip();
 
-  // Fetch content toggle
   fetchContentToggle.addEventListener("change", () => {
     if (fetchContentToggle.checked) {
-      // Disable the content input
       contentInput.disabled = true
       contentInput.placeholder = "Content will be fetched from the current page..."
     } else {
-      // Enable the content input
       contentInput.disabled = false
       contentInput.placeholder = "Paste or type content to summarize..."
     }
   })
 
-  // Summarize button click
   summarizeBtn.addEventListener("click", () => {
-    // Hide previous results and errors
     summarizerResult.classList.add("hidden");
     summarizerError.classList.add("hidden");
 
-    // Show loading
     summarizerLoading.classList.remove("hidden");
 
     if (fetchContentToggle.checked) {
-      // Fetch content from current page
       fetchCurrentPageContent()
         .then((content) => {
           if (content) {
@@ -503,7 +494,6 @@ document.addEventListener("DOMContentLoaded", () => {
           showError("Error fetching content: " + error.message)
         })
     } else {
-      // Use content from input
       const content = contentInput.value.trim()
       if (!content) {
         showError("Please enter some content to summarize.")
@@ -514,21 +504,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Retry button click
   retryBtn.addEventListener("click", () => {
-    // Hide error
     summarizerError.classList.add("hidden")
-    // Trigger summarize button click
     summarizeBtn.click()
   })
 
-  // Copy summary button click
   copySummaryBtn.addEventListener("click", () => {
     const summaryText = summaryContent.textContent
     navigator.clipboard
       .writeText(summaryText)
       .then(() => {
-        // Show copied feedback
         const originalText = copySummaryBtn.innerHTML
         copySummaryBtn.innerHTML = '<span class="icon">✓</span>'
         setTimeout(() => {
@@ -540,11 +525,10 @@ document.addEventListener("DOMContentLoaded", () => {
       })
   })
 
-  // Share summary button click
   shareSummaryBtn.addEventListener("click", () => {
     const summaryText = summaryContent.textContent
 
-    // Check if Web Share API is available
+    // web share api available ?
     if (navigator.share) {
       navigator
         .share({
@@ -555,7 +539,6 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error("Failed to share: ", err)
         })
     } else {
-      // Fallback to copy
       navigator.clipboard
         .writeText(summaryText)
         .then(() => {
@@ -567,10 +550,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Function to fetch content from current page
   async function fetchCurrentPageContent() {
     return new Promise((resolve, reject) => {
-      // Query the active tab
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (!tabs || tabs.length === 0) {
           reject(new Error("No active tab found"))
@@ -579,12 +560,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const activeTab = tabs[0]
 
-        // Check if it's a YouTube page
         if (activeTab.url.includes("youtube.com/watch")) {
-          // Fetch YouTube transcript
           chrome.tabs.sendMessage(activeTab.id, { action: "getYouTubeTranscript" }, (response) => {
             if (chrome.runtime.lastError) {
-              // Content script might not be injected
               reject(new Error("Could not get YouTube transcript. Make sure you're on a video page."))
               return
             }
@@ -596,15 +574,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           })
         } else {
-          // Regular web page - get all text content
           chrome.tabs.sendMessage(activeTab.id, { action: "getPageContent" }, (response) => {
             if (chrome.runtime.lastError) {
-              // Content script might not be injected, inject it
               chrome.scripting.executeScript(
                 {
                   target: { tabId: activeTab.id },
                   function: () => {
-                    // Get page content
                     const content = document.body.innerText
                     return content
                   },
@@ -633,7 +608,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Function to generate summary using Gemini
   async function generateSummary(content) {
     try {
       const mode = summaryMode.value
@@ -659,11 +633,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.error) {
         throw new Error(data.message || "Failed to generate summary")
       }
-
-      // Display the summary
       summaryContent.innerHTML = formatSummary(data.summary, mode)
 
-      // Hide loading and show result
       summarizerLoading.classList.add("hidden")
       summarizerResult.classList.remove("hidden")
     } catch (error) {
@@ -671,22 +642,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Format summary based on mode
   function formatSummary(summary, mode) {
     switch (mode) {
       case "bullets":
       case "todos":
-        // Convert to HTML list if not already formatted
         if (!summary.includes("<li>")) {
           const lines = summary.split("\n").filter((line) => line.trim());
           const listItems = lines.map((line) => {
-            // Remove any leading bullets, numbers, or special characters
             let cleanLine = line.replace(/^[\s•\-\d.)]+\s*/, "");
   
-            // Optional: Bold the first part of the sentence if it's followed by a colon
             cleanLine = cleanLine.replace(/^(.+?):\s*/, "<strong>$1:</strong> ");
   
-            // Convert markdown-style bold to HTML <strong> tags
             cleanLine = cleanLine.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
   
             return `<li style="margin-bottom: 0.5em;">${cleanLine}</li>`;
@@ -694,7 +660,6 @@ document.addEventListener("DOMContentLoaded", () => {
           return `<ul style="padding-left: 1.5em; list-style-type: disc;">${listItems.join("")}</ul>`;
         }
   
-        // If already formatted, still convert **bold** to <strong>
         summary = summary.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
         return summary;
   
@@ -713,7 +678,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
 
-  // Show error message
   function showError(message) {
     const errorMessage = document.querySelector(".error-message")
     errorMessage.textContent = message
@@ -722,7 +686,7 @@ document.addEventListener("DOMContentLoaded", () => {
     summarizerError.classList.remove("hidden")
   }
 
-  // Load random productivity tip
+ 
   function loadRandomProductivityTip() {
     const tips = [
       "Use the Pomodoro Technique: Work for 25 minutes, then take a 5-minute break.",
